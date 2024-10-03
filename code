@@ -1,0 +1,108 @@
+# Import necessary libraries
+import pandas as pd
+from mlxtend.preprocessing import TransactionEncoder
+from mlxtend.frequent_patterns import apriori, association_rules
+import matplotlib.pyplot as plt
+import seaborn as sns
+# Step 1: Print the name "T103 Sahil Rajpure" at the top of the output
+print("T072 Narayan")
+print("~~" * 50)
+# Step 2: Define a new sample dataset with e-commerce transactions
+# Sample transactions for an e-commerce store
+ecommerce_data = [
+['Laptop', 'Mouse', 'Keyboard'],
+['Laptop', 'Monitor'],
+['Mouse', 'Keyboard', 'Headphones'],
+['Laptop', 'Mouse'],
+['Monitor', 'Keyboard'],
+['Mouse', 'Headphones'],
+['Keyboard', 'Monitor'],
+['Laptop', 'Monitor', 'Mouse'],
+['Laptop', 'Mouse', 'Keyboard'],
+['Headphones', 'Mouse']
+]
+# Step 3: Print the first 3 transactions of the e-commerce dataset
+print("First 3 Transactions of the E-Commerce Dataset:")
+print(ecommerce_data[:3])
+print("~~" * 50)
+# Step 4: Print the shape of the dataset
+print(f"Shape of the Dataset: {len(ecommerce_data)} transactions")
+print("~~" * 50)
+# Step 5: Convert the e-commerce data into a one-hot encoded format using
+TransactionEncoder
+te = TransactionEncoder()
+te_data = te.fit(ecommerce_data).transform(ecommerce_data)
+# Step 6: Convert the one-hot encoded data into a DataFrame
+df_encoded = pd.DataFrame(te_data, columns=te.columns_)
+# Step 7: Apply apriori algorithm to find frequent itemsets with a minimum support of 0.2
+frequent_itemsets = apriori(df_encoded, min_support=0.2, use_colnames=True)
+# Step 8: Sort the frequent itemsets by support in descending order
+frequent_itemsets_sorted = frequent_itemsets.sort_values(by="support", ascending=False)
+# Step 9: Generate association rules with a confidence threshold of 0.5
+rules = association_rules(frequent_itemsets_sorted, metric="confidence",
+min_threshold=0.5)
+# Step 10: Display the final rules sorted by confidence
+rules_sorted = rules.sort_values(by="confidence", ascending=False)
+print("Association Rules:")
+PRAC 9 | Association Rule Mining Narayan behera
+SHETH L.U.J & M.V. COLLEGE
+Aim : Implement the Association Rule Mining algorithm (e.g., Apriori) to find frequenitemsets.
+print(rules_sorted[['antecedents', 'consequents', 'support', 'confidence', 'lift']])
+print("~~" * 50)
+# Step 11: Print and visualize the top 10 items based on support
+top_10_support = frequent_itemsets_sorted.nlargest(10, 'support')
+print("Top 10 E-Commerce Items by Support:")
+print(top_10_support)
+print("~~" * 50)
+# Step 12: Visualize the top 10 e-commerce items based on support
+plt.figure(figsize=(10, 6))
+sns.barplot(x='support', y='itemsets', data=top_10_support, palette='viridis')
+plt.title('Top 10 E-Commerce Items by Support')
+plt.xlabel('Support')
+plt.ylabel('E-Commerce Items')
+plt.show()
+# Step 13: Extract confidence for each pair of items (antecedents and consequents)
+# Create a new DataFrame with item pairs (antecedents and consequents) and their
+corresponding confidence
+item_pair_confidence = rules[['antecedents', 'consequents', 'confidence']].copy()
+# Convert frozensets to strings for better readability
+item_pair_confidence['antecedents'] = item_pair_confidence['antecedents'].apply(lambda x: ',
+'.join(list(x)))
+item_pair_confidence['consequents'] = item_pair_confidence['consequents'].apply(lambda x:
+', '.join(list(x)))
+# Step 14: Combine antecedents and consequents into a single column for graph labeling
+item_pair_confidence['pair'] = item_pair_confidence['antecedents'] + " -> " +
+item_pair_confidence['consequents']
+# Step 15: Sort the DataFrame by confidence in descending order
+item_pair_confidence_sorted = item_pair_confidence.sort_values(by='confidence',
+ascending=False)
+# Step 16: Plot a line graph for confidence with respect to item pairs
+plt.figure(figsize=(12, 6))
+sns.lineplot(data=item_pair_confidence_sorted, x='pair', y='confidence', marker='o',
+color='blue')
+plt.xticks(rotation=45, ha='right')
+plt.title('Confidence of E-Commerce Item Pairs')
+plt.xlabel('E-Commerce Item Pairs')
+plt.ylabel('Confidence')
+plt.grid()
+plt.tight_layout()
+plt.show()
+# Step 17: Print the data with the largest lift values
+top_lift = rules.nlargest(5, 'lift')
+print("Top 5 Item Pairs by Lift:")
+print(top_lift[['antecedents', 'consequents', 'support', 'confidence', 'lift']])
+print("~~" * 50)
+# Step 18: Visualize the top 5 item pairs based on lift
+PRAC 9 | Association Rule Mining Narayan behera
+SHETH L.U.J & M.V. COLLEGE
+Aim : Implement the Association Rule Mining algorithm (e.g., Apriori) to find frequenitemsets.
+top_lift['pair'] = top_lift['antecedents'].apply(lambda x: ', '.join(list(x))) + " -> " +
+top_lift['consequents'].apply(lambda x: ', '.join(list(x)))
+plt.figure(figsize=(12, 6))
+sns.barplot(x='lift', y='pair', data=top_lift, palette='plasma')
+plt.title('Top 5 E-Commerce Item Pairs by Lift')
+plt.xlabel('Lift')
+plt.ylabel('Item Pairs')
+plt.xticks(rotation=45, ha='right')
+plt.tight_layout()
+plt.show()
